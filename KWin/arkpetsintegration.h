@@ -30,6 +30,7 @@ public:
     uint Version();
     DetailsList List();
     void Above(const QString &uuid, bool enable);
+    void NoBorder(const QString &uuid, bool enable);
     void Stick(const QString &uuid, bool enable);
     struct Details Details(const QString &uuid);
     void Activate(const QString &uuid);

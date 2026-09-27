@@ -12,6 +12,10 @@
             <arg type="s" direction="in" name="uuid" />
             <arg type="b" direction="in" name="enable" />
         </method>
+        <method name="NoBorder">
+            <arg type="s" direction="in" name="uuid" />
+            <arg type="b" direction="in" name="enable" />
+        </method>
         <method name="Details">
             <arg type="s" direction="in" name="uuid" />
             <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="ArkPets::Details"/>

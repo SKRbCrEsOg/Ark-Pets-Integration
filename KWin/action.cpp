@@ -16,6 +16,11 @@ void ArkPetsIntegration::Above(const QString &uuid, bool enable)
     const auto window = AP_FIND_WINDOW(uuid, ) window->setKeepAbove(enable);
 }
 
+void ArkPetsIntegration::NoBorder(const QString &uuid, bool enable)
+{
+    const auto window = AP_FIND_WINDOW(uuid, ) window->setNoBorder(enable);
+}
+
 void ArkPetsIntegration::Stick(const QString &uuid, bool enable)
 {
     const auto window = AP_FIND_WINDOW(uuid, ) window->setSkipTaskbar(!enable);
