@@ -48,7 +48,15 @@ void ArkPetsIntegration::MoveResize(const QString &uuid, int x, int y, uint w, u
 
 void ArkPetsIntegration::TestStrutOutline(const QString &uuid)
 {
-    const auto window = AP_FIND_WINDOW(uuid, ) const auto struts = window->strutRects();
+    const auto window = AP_FIND_WINDOW(uuid, )
+    // Same hazard as in List(): a window KWin has marked deleted can still be reachable from the
+    // stacking order with an already-destroyed m_shellSurface. strutRects() and strutRect() both
+    // dispatch to LayerShellV1Window's unguarded override, so refuse to touch a deleted window.
+    if (window->isDeleted()) {
+        qWarning() << "Window is being destroyed; refusing to query its struts";
+        return;
+    }
+    const auto struts = window->strutRects();
     if (struts.empty()) {
         qWarning() << "Window no strut";
         return;
