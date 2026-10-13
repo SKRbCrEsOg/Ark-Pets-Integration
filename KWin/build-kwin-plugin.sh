@@ -230,28 +230,44 @@ else
 fi
 
 # --- Locate or fetch the sources ----------------------------------------------------------
+# The CMake project sits in the KWin/ subdirectory of the repository, so three layouts have to
+# work: this script inside KWin/ (a checkout), this script at the repository root, and this
+# script on its own next to a downloaded release - in which case the sources are fetched.
+find_cmake_dir() {
+    local base="$1"
+    if [[ -f "$base/CMakeLists.txt" ]]; then
+        printf '%s' "$base"; return 0
+    fi
+    if [[ -f "$base/KWin/CMakeLists.txt" ]]; then
+        printf '%s' "$base/KWin"; return 0
+    fi
+    return 1
+}
+
+CLONE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/arkpets-integration"
+
 if [[ -z "$SOURCE_DIR" ]]; then
-    if [[ -f "$SCRIPT_DIR/CMakeLists.txt" ]]; then
-        SOURCE_DIR="$SCRIPT_DIR"
+    if resolved="$(find_cmake_dir "$SCRIPT_DIR")"; then
+        SOURCE_DIR="$resolved"
     else
-        SOURCE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/arkpets-integration"
+        SOURCE_DIR="$CLONE_DIR"
     fi
 fi
 
-if [[ -f "$SOURCE_DIR/CMakeLists.txt" ]]; then
-    log "Sources: $SOURCE_DIR"
-else
-    log "Sources: fetching Ark-Pets-Integration into $SOURCE_DIR"
+if ! resolved="$(find_cmake_dir "$SOURCE_DIR")"; then
+    log "Sources: fetching Ark-Pets-Integration into $CLONE_DIR"
     command -v git >/dev/null 2>&1 || die "git is required to fetch the sources"
-    if [[ -d "$SOURCE_DIR/.git" ]]; then
-        git -C "$SOURCE_DIR" pull --ff-only || die "could not update $SOURCE_DIR"
+    if [[ -d "$CLONE_DIR/.git" ]]; then
+        git -C "$CLONE_DIR" pull --ff-only || die "could not update $CLONE_DIR"
     else
-        mkdir -p "$(dirname "$SOURCE_DIR")"
-        git clone --depth 1 "$REPO_URL" "$SOURCE_DIR" || die "could not clone $REPO_URL"
+        mkdir -p "$(dirname "$CLONE_DIR")"
+        git clone --depth 1 "$REPO_URL" "$CLONE_DIR" || die "could not clone $REPO_URL"
     fi
+    resolved="$(find_cmake_dir "$CLONE_DIR")" \
+        || die "$CLONE_DIR does not look like the KWin plugin source"
 fi
-
-[[ -f "$SOURCE_DIR/CMakeLists.txt" ]] || die "$SOURCE_DIR does not look like the KWin plugin source"
+SOURCE_DIR="$resolved"
+log "Sources: $SOURCE_DIR"
 
 if [[ -z "$BUILD_DIR" ]]; then
     BUILD_DIR="$SOURCE_DIR/build"
